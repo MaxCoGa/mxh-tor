@@ -3,7 +3,7 @@
 
 ## Build the container image
 
-    docker build -f Dockerfile -t mxh-tor
+    docker build -f dockerfile -t mxh-tor
 
 ## Execute the container
 
