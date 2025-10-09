@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e
+
 # Generate a self-signed SSL certificate for a .onion service
 # Usage: ./generate-onion-cert.sh yourservice.onion
 

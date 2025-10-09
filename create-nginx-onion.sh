@@ -1,3 +1,6 @@
+#!/bin/bash
+set -e
+
 # Tor hidden service
 ONION_DOMAIN_NAME=$1
 
@@ -6,7 +9,8 @@ mkdir -p "$WEBROOT"
 echo "<h1>Welcome to something...</h1>" | tee "$WEBROOT/index.html" > /dev/null
 
 CERT_DIR="/etc/ssl/onion/$ONION_DOMAIN_NAME"
-NGINX_CONF="/etc/nginx/sites-available/nginx-onion.conf"
+mkdir -p /etc/nginx/http.d
+NGINX_CONF="/etc/nginx/http.d/nginx-onion.conf"
 
 tee "$NGINX_CONF" > /dev/null << EOF
 server {
@@ -42,6 +46,13 @@ server {
 }
 EOF
 
-ln -sf "$NGINX_CONF" /etc/nginx/sites-enabled/
+# ln -sf "$NGINX_CONF" /etc/nginx/sites-enabled/
 
-sed -i '/http {/a \    server_names_hash_bucket_size 128;' /etc/nginx/nginx.conf
+# check if the directive exists in nginx.conf
+if ! grep -q "server_names_hash_bucket_size 128;" /etc/nginx/nginx.conf; then
+    sed -i '/http {/a \    server_names_hash_bucket_size 128;' /etc/nginx/nginx.conf
+    echo "[INFO] Added server_names_hash_bucket_size 128 to nginx.conf"
+else
+    echo "[INFO] server_names_hash_bucket_size 128 already present, skipping"
+fi
+

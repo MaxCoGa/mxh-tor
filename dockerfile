@@ -1,15 +1,28 @@
 # base
-FROM ubuntu:24.04
+FROM alpine:3.22.2
 
-RUN apt update
-RUN apt-get install -y --no-install-recommends ca-certificates
-RUN apt-get install -y --no-install-recommends libfaketime faketime openssl wget tor nginx
+# install required packages
+RUN apk add --no-cache \
+    openrc \
+    coreutils \
+    bash \
+    ca-certificates \
+    openssl \
+    libfaketime \
+    tor \
+    nginx \
+    wget
 
-# make the script executable
+# create working directory
 WORKDIR /tor-config
-COPY config.sh create-nginx-onion.sh generate-onion-cert.sh /tor-config/
-RUN chmod +x config.sh create-nginx-onion.sh generate-onion-cert.sh
 
+COPY config.sh create-nginx-onion.sh generate-onion-cert.sh /tor-config/
+RUN chmod +x /tor-config/*.sh
+
+# ensure necessary dirs exist for tor and nginx
+# RUN mkdir -p /var/lib/tor/hidden_service /run/nginx /var/www && \
+#     chown -R tor:tor /var/lib/tor && \
+#     chown -R nginx:nginx /var/www
 
 # set the entrypoint
 # ENTRYPOINT ["sh", "config.sh"]
@@ -18,8 +31,5 @@ RUN chmod +x config.sh create-nginx-onion.sh generate-onion-cert.sh
 
 # Set default command to run your setup script and start services
 CMD ["/bin/bash", "-c", "\
-    sh /tor-config/config.sh && \
-    echo 'Hidden Service Hostname:' && \
-    cat /var/lib/tor/hidden_service/hostname && \
-    nginx -g 'daemon off;' \
+    sh /tor-config/config.sh \
 "]
